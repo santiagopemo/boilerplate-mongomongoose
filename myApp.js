@@ -1,33 +1,88 @@
 require('dotenv').config();
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
+const {Schema} = mongoose;
 
-let Person;
+const personSchema = new Schema({
+  name: {type: String, required: true},
+  age: Number,
+  favoriteFoods: [String]
+});
+
+// let Person;
+const Person = mongoose.model("Person", personSchema);
 
 const createAndSavePerson = (done) => {
-  done(null /*, data*/);
+  let person = new Person({
+    name: "Santiago",
+    age: 27,
+    favoriteFoods: ["Tamal", "Ajiaco"]
+  });
+  person.save(function(err, data) {
+    if (err) return console.error(err);
+    done(null, data);
+  });
 };
 
+// createAndSavePerson((err, data) => console.log(data));
+
+const arrayOfPeople = [
+  {name:"Andres", age: 20, favoriteFoods: ["Tomato", "Corona"]},
+  {name:"Elias", age: 25, favoriteFoods: ["Pizza", "Cake"]}
+]
 const createManyPeople = (arrayOfPeople, done) => {
-  done(null /*, data*/);
+  Person.create(arrayOfPeople, function(err, data) {
+    if (err) return console.error(err);
+    done(null, data);
+  });
 };
+
+// createManyPeople(arrayOfPeople, (err, data) => console.log(data));
 
 const findPeopleByName = (personName, done) => {
-  done(null /*, data*/);
+  Person.find({name: personName}, function(err, data) {
+    if (err) return console.error(err);
+    done(null, data)
+  });
 };
+
+// findPeopleByName("Santiago", (err, data) => console.log(data))
 
 const findOneByFood = (food, done) => {
-  done(null /*, data*/);
+  Person.findOne({"favoriteFoods": food}, (err, data) => {
+    if (err) return console.error(err);
+    done(null, data);
+  });
 };
 
+// findOneByFood("Corona", (err, data) => console.log(data))
+
 const findPersonById = (personId, done) => {
-  done(null /*, data*/);
+  Person.findById(personId, (err, data) => {
+    if (err) return console.error(err);
+    done(null, data);
+  });
 };
+
+// findPersonById('610782e307faa201519c16a0', (err, data) => {
+//   if (err) return console.log("An error occur");
+//   console.log(data)
+// });
 
 const findEditThenSave = (personId, done) => {
   const foodToAdd = "hamburger";
-
-  done(null /*, data*/);
+  Person.findById(personId, (err, personToEdit) => {
+    if (err) return console.error(err);
+    personToEdit.favoriteFoods.push(foodToAdd);
+    personToEdit.save((err, personEdited) => {
+      if (err) return console.error(err);
+      done(null, personEdited);
+    })
+  });
 };
+
+// findEditThenSave("610782e307faa201519c16a0", (err, data) => console.log(data))
 
 const findAndUpdate = (personName, done) => {
   const ageToSet = 20;
