@@ -1,7 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-
 const {Schema} = mongoose;
 
 const personSchema = new Schema({
@@ -14,7 +13,7 @@ const personSchema = new Schema({
 const Person = mongoose.model("Person", personSchema);
 
 const createAndSavePerson = (done) => {
-  let person = new Person({
+  const person = new Person({
     name: "Santiago",
     age: 27,
     favoriteFoods: ["Tamal", "Ajiaco"]
@@ -69,7 +68,6 @@ const findPersonById = (personId, done) => {
 //   if (err) return console.log("An error occur");
 //   console.log(data)
 // });
-
 const findEditThenSave = (personId, done) => {
   const foodToAdd = "hamburger";
   Person.findById(personId, (err, personToEdit) => {
@@ -86,26 +84,52 @@ const findEditThenSave = (personId, done) => {
 
 const findAndUpdate = (personName, done) => {
   const ageToSet = 20;
-
-  done(null /*, data*/);
+  Person.findOneAndUpdate({name: personName}, {age: ageToSet}, {new: true}, (err, personUpdated) => {
+    if (err) console.error(err);
+    done(null, personUpdated);
+  });
 };
+
+// findAndUpdate("Santiago", (err, data) => console.log(data));
 
 const removeById = (personId, done) => {
-  done(null /*, data*/);
+  // Person.findOneAndRemove({_id: personId}, (err, data) => {
+  //   if (err) console.error(err);
+  //   done(null, data);
+  // });
+  Person.findByIdAndRemove(personId, (err, data) => {
+    if (err) console.error(err);
+    done(null, data);
+  });
 };
+
+// removeById("610782e307faa201519c16a0", (err, data) => console.log(data))
 
 const removeManyPeople = (done) => {
   const nameToRemove = "Mary";
 
-  done(null /*, data*/);
+  Person.remove({name: nameToRemove}, (err, data) => {
+    if (err) console.error(err);
+    done(null, data);
+  });
 };
+
+// removeManyPeople((err, data) => console.log(data));
 
 const queryChain = (done) => {
   const foodToSearch = "burrito";
 
-  done(null /*, data*/);
+  Person.find({favoriteFoods: foodToSearch})
+        .sort({name: 1})
+        .limit(2)
+        .select({age: 0})
+        .exec((err, data) => {
+          if (err) console.error(err);
+          done(null, data);
+        });
 };
 
+// queryChain((err, data) => console.log(data))
 /** **Well Done !!**
 /* You completed these challenges, let's go celebrate !
  */
